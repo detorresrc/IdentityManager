@@ -1,0 +1,56 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row col-md-10 offset-md-1">
+  <h1 class="text-primary text-center pt-2">Login</h1>
+  <form method="post" asp-controller="Account" asp-action="Login" asp-route-ReturnUrl="@ViewData["ReturnUrl"]">
+    <div class="border p-2 rounded">
+      <div asp-validation-summary="All" class="text-danger"></div>
+      <div class="form-froup">
+        <label asp-for="Email" class="col-12">Email</label>
+        <div class="col-md-12">
+          <input asp-for="Email" class="form-control"/>
+          <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+      </div>
+      <div class="form-froup">
+        <label asp-for="Password" class="col-12">Password</label>
+        <div class="col-md-12">
+          <input asp-for="Password" class="form-control"/>
+          <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+      </div>
+      <div class="form-froup pt-2">
+        <div class="col-md-12">
+          <div class="custom-checkbox">
+            <label>
+              <input asp-for="RememberMe"/>
+              Remember Me?
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="form-froup pt-3">
+        <div class="col-md-6 offset-md-3">
+          <button class="btn btn-success form-control" type="submit">Login</button>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <a asp-action="Register" asp-route-ReturnUrl="@ViewData["ReturnUrl"]">Register as a new user?</a>
+          </div>
+          <div class="col-6 text-end">
+            <a asp-action="ForgotPassword">Forgot your password?</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+@section Scripts {
+  @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+  }
+}
