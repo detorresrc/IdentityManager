@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace IdentityManager.Models.ViewModels
 {
@@ -19,6 +20,12 @@ namespace IdentityManager.Models.ViewModels
     [Required]
     [Compare("Password", ErrorMessage = "The password and confirmation password do not match")]
     [DataType(DataType.Password)]
+    [Display(Name = "Confirm Password")]
     public string ConfirmPassword { get; set; }
+
+    public IEnumerable<SelectListItem>? RoleList { get; set; }
+    [Display(Name="Role")]
+    [Required]
+    public string RoleSelected { get; set; }
   }
 }

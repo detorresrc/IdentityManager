@@ -5,14 +5,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace IdentityManager.Controllers
 {
+    [Authorize]
     public class AccountController : BaseController
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly UrlEncoder _urlEncoder;
         private ILogger<AccountController> _logger;
@@ -22,60 +24,78 @@ namespace IdentityManager.Controllers
             ILogger<AccountController> logger,
             SignInManager<ApplicationUser> signInManager, 
             UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
             UrlEncoder urlEncoder
         ){
             _logger = logger;
             _userManager = userManager;
+            _roleManager = roleManager;
             _emailSender = emailSender;
             _urlEncoder = urlEncoder;
             _signInManager = signInManager;
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login([FromQuery]string? returnUrl=null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
-        [HttpGet]
-        public IActionResult Register([FromQuery]string? returnUrl=null)
+        [HttpGet("auth/register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromQuery]string? returnUrl=null)
         {
             ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            RegisterViewModel model = new()
+            {
+                RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
+                {
+                    Text = i,
+                    Value = i
+                })
+            };
+            return View(model);
         }
 
         [HttpGet("registration-confirmation")]
+        [AllowAnonymous]
         public IActionResult RegistrationConfirmation()
         {
             return View();
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ForgotPassword()
         {
             return View();
         }
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
 
         [HttpGet("reset-password")]
+        [AllowAnonymous]
         public IActionResult ResetPassword([FromQuery]string code = null)
         {
             return code == null ? View("Error") : View();
         }
 
         [HttpGet("reset-password-confirmation")]
+        [AllowAnonymous]
         public IActionResult ResetPasswordConfirmation()
         {
             return View();
         }
 
         [HttpGet("confirm-email")]
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail([FromQuery]string code, [FromQuery]string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -94,12 +114,14 @@ namespace IdentityManager.Controllers
         }
 
         [HttpGet("authenticator-confirmation")]
+        [AllowAnonymous]
         public IActionResult AuthenticatorConfirmation()
         {
             return View();
         }
 
         [HttpGet("auth/verify-authenticator")]
+        [AllowAnonymous]
         public async Task<IActionResult> VerifyAuthenticator
         (
             bool rememberMe,
@@ -117,6 +139,7 @@ namespace IdentityManager.Controllers
         }
 
         [HttpPost("auth/verify-authenticator")]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyAuthenticator(VerifyAuthenticatorViewModel model)
         {
@@ -143,7 +166,6 @@ namespace IdentityManager.Controllers
 
 
         [HttpGet("auth/enable-authenticator")]
-        [Authorize]
         public async Task<IActionResult> EnableAuthenticator()
         {
             string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
@@ -168,7 +190,6 @@ namespace IdentityManager.Controllers
         }
 
         [HttpGet("auth/remove-authenticator")]
-        [Authorize]
         public async Task<IActionResult> RemoveAuthenticator()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -183,7 +204,6 @@ namespace IdentityManager.Controllers
         }
 
         [HttpPost("auth/enable-authenticator")]
-        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableAuthenticator(TwoFactorAuthenticationViewModel model)
         {
@@ -213,6 +233,7 @@ namespace IdentityManager.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, [FromQuery]string? returnUrl =null)
         {
@@ -245,7 +266,8 @@ namespace IdentityManager.Controllers
             return View(model);
         }
 
-        [HttpPost]
+        [HttpPost("auth/register")]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, [FromQuery]string? returnUrl =null)
         {
@@ -263,6 +285,11 @@ namespace IdentityManager.Controllers
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if(result.Succeeded)
                 {
+                    if(model.RoleSelected!=null && model.RoleSelected.Length>0)
+                    {
+                        await _userManager.AddToRoleAsync(user, model.RoleSelected);
+                    }
+
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Action
                     (
@@ -292,10 +319,18 @@ namespace IdentityManager.Controllers
                 }
                 AddErrors(result);
             }
+
+            model.RoleList = _roleManager.Roles.Select(x => x.Name).Select(i => new SelectListItem
+            {
+                Text = i,
+                Value = i
+            });
+
             return View(model);
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -338,6 +373,7 @@ namespace IdentityManager.Controllers
         }
 
         [HttpPost("reset-password")]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
