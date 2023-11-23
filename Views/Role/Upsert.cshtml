@@ -1,0 +1,45 @@
+@model Microsoft.AspNetCore.Identity.IdentityRole
+
+@{
+  var title = "Create Role";
+  var buttonLabel = "Save";
+}
+<form method="post" asp-controller="Role" asp-action="Upsert" asp-route-roleId="@Model?.Id">
+  @if(Model!=null && !String.IsNullOrEmpty(Model.Id))
+  {
+    title = "Edit Role";
+    buttonLabel = "Update";
+  }
+<input asp-for="Id" hidden/>
+<div class="card shadow border-0 mt-2">
+  <div class="card-header bg-success bg-gradient ml-0 py-1">
+    <div class="row">
+      <div class="col-12 text-left">
+        <h2 class="text-whte py-2">@title</h2>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="form-froup">
+      <label asp-for="Name" class="col-12"></label>
+      <div class="col-md-12">
+        <input asp-for="Name" class="form-control"/>
+        <span asp-validation-for="Name" class="text-danger"></span>
+      </div>
+    </div>
+    <div class="form-froup pt-3 text-left row">
+      <div class="col-md-2">
+        <button class="btn btn-success form-control" type="submit">@buttonLabel</button>
+      </div>
+      <div class="col-md-2">
+        <a class="btn btn-secondary form-control" asp-controller="Role" asp-action="Index">Cancel / Back</a>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+
+@{
+  ViewData["Title"] = title;
+}

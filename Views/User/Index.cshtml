@@ -1,0 +1,66 @@
+@model IEnumerable<ApplicationUser>
+
+@{
+    ViewBag.Title = "User List";
+}
+
+<div class="card shadow border-0 mt-2">
+  <div class="card-header bg-success bg-gradient ml-0 py-1">
+    <div class="row">
+      <div class="col-12 text-left">
+        <h2 class="text-whte py-2">User List</h2>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    @if(Model.Count() > 0)
+    {
+      <table class="table table-bordered table-striped">
+        <tr class="table-secondary">
+          <th>
+            Email
+          </th>
+          <th>
+            Name
+          </th>
+          <th>
+            Roles
+          </th>
+          <th>
+          </th>
+        </tr>
+        @foreach(var item in Model)
+        {
+          <tr>
+            <td>@item.Email</td>
+            <td>@item.Name</td>
+            <td>
+              @foreach (var role in item.Role)
+              {
+                <h6><span class="badge bg-primary">@role.ToUpper()</span></h6>
+              }
+            </td>
+            <td class="text-center">
+              <a asp-action="ManageRole" asp-route-userId="@item.Id" class="btn btn-primary w-40">Roles</a>
+              @if(item.LockoutEnd==null || item.LockoutEnd < DateTime.Now)
+              {
+                <form asp-action="LockUnlockUser" method="post" asp-route-userId="@item.Id">
+                  <button type="submit" class="btn btn-warning w-40">Lock</button>
+                </form>
+              }
+              else
+              {
+                <form asp-action="LockUnlockUser" method="post" asp-route-userId="@item.Id">
+                  <button type="submit" class="btn btn-success w-40">Unlock</button>
+                </form>
+              }
+              <form asp-action="Delete" method="post" asp-route-userId="@item.Id">
+                <button onclick="return confirm('Are you sure you want to delete?')" type="submit" class="btn btn-danger w-40">Unlock</button>
+              </form>
+            </td>
+          </tr>
+        }
+      </table>
+    }
+  </div>
+</div>

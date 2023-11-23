@@ -9,7 +9,7 @@ namespace IdentityManager.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View("Error!");
+            return BadRequest("An error has occured, please try again!");
         }
         
         protected void AddErrors(IdentityResult result)
